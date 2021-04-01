@@ -88,7 +88,9 @@
                     let data = [];
 
                     _.forEach(res, (membership) => {
-                        data.push(membership);
+                        if(membership.inInclude) {
+                            data.push(membership);
+                        }
                     });
 
                     let dups = coupleDuplicatePaths(data);
@@ -199,13 +201,27 @@
         };
 
         /**
-         * Copy grouping path to clipboard.
+         * Copy grouping path to clipboard and toggle 'copied!' popover.
          */
         $scope.copyPath = function (grouping) {
+            $("[data-content='copy']").popover("hide");
+
+            $("[data-content='copied!']").popover();
+            setTimeout(function () {
+                $("[data-content='copied!']").popover("hide");
+            }, 1000);
+
             let copyText = document.getElementById(grouping.path);
             copyText.select();
             document.execCommand("copy");
         };
+        /**
+         * Toggle 'copy' popover when clipboard is being hovered.
+         */
+        $scope.hoverCopy = function () {
+            $("[data-content='copy']").popover();
+        };
+
     }
 
     UHGroupingsApp.controller("MembershipJsController", MembershipJsController);

@@ -404,21 +404,21 @@
         };
 
         /**
-        * Set a new description for a Grouping.
-        */
+         * Set a new description for a Grouping.
+         */
         $scope.saveDescription = function () {
-          if (groupingDescription.localeCompare($scope.modelDescription) === 0) {
-            return $scope.cancelDescriptionEdit();
-        }
-          groupingDescription = $scope.modelDescription;
-          groupingsService.updateDescription(groupingDescription, $scope.selectedGrouping.path,
-            () => {
-              $scope.descriptionForm = !($scope.descriptionForm);
-            }, // close description form when done.
-            (res) => {
-              dataProvider.handleException({ exceptionMessage: JSON.stringify(res, null, 4) },
-                  "feedback/error", "feedback");
-            }); // send user to feedback page if fail
+            if (groupingDescription.localeCompare($scope.modelDescription) === 0) {
+                return $scope.cancelDescriptionEdit();
+            }
+            groupingDescription = $scope.modelDescription;
+            groupingsService.updateDescription(groupingDescription, $scope.selectedGrouping.path,
+                () => {
+                    $scope.descriptionForm = !($scope.descriptionForm);
+                }, // close description form when done.
+                (res) => {
+                    dataProvider.handleException({ exceptionMessage: JSON.stringify(res, null, 4) },
+                        "feedback/error", "feedback");
+                }); // send user to feedback page if fail
         };
 
         /**
@@ -603,10 +603,9 @@
                 }
             };
             $scope.waitingForImportResponse = true; /* Spinner on */
-            if(listName === "Include"){
+            if (listName === "Include") {
                 await groupingsService.addMembersToInclude(list, groupingPath, handleSuccessfulAdd, handleUnsuccessfulRequest, timeoutModal);
-            }
-            else if(listName === "Exclude") {
+            } else if (listName === "Exclude") {
                 await groupingsService.addMembersToExclude(list, groupingPath, handleSuccessfulAdd, handleUnsuccessfulRequest, timeoutModal);
             }
         };
@@ -897,10 +896,12 @@
          */
         $scope.existsInGrouper = function (user, list) {
             groupingsService.getMemberAttributes(user, function (attributes) {
-                if (attributes.uhUuid > 0) {
-                    $scope.initMemberDisplayName(attributes);
-                    $scope.addMember(list);
+                if (attributes === "") {
+                    $scope.resStatus = 404;
+                    return;
                 }
+                $scope.initMemberDisplayName(attributes);
+                $scope.addMember(list);
             }, function (res) {
                 $scope.user = user;
                 $scope.resStatus = res.status;
@@ -918,7 +919,9 @@
             $scope.listName = options.listName;
 
             groupingsService.getMemberAttributes(userToAdd, function (attributes) {
-                if (attributes.uhUuid > 0) {
+                if (attributes === "") {
+                    return;
+                } else {
                     $scope.initMemberDisplayName(attributes);
                 }
                 // Ask for confirmation from the user to add the member
@@ -1139,9 +1142,10 @@
                 $scope.getGroupingInformation();
                 $scope.syncDestArray = [];
             } else if ($scope.currentUser === $scope.userToRemove.username) {
-                // Removing self from last grouping owned -> redirect to home page
+                // Removing self from last grouping owned -> redirect to home page and then logout
                 if ($scope.groupingsList.length === 1) {
-                    $window.location.href = "home";
+                    $window.location.href = "/uhgroupings/";
+                    $scope.reDirect();
                 } else {
                     $window.location.href = "groupings";
                 }
@@ -1152,7 +1156,9 @@
          * Handler for successfully removing an admin from a grouping.
          */
         function handleAdminRemove() {
+            // Removing self as admin -> redirect to home page and then logout
             if ($scope.currentUser === $scope.userToRemove.username) {
+                $window.location.href = "/uhgroupings/";
                 $scope.reDirect();
             } else {
                 $scope.init();
@@ -1202,10 +1208,9 @@
          */
         $scope.reDirect = function () {
             let r = new XMLHttpRequest();
-            r.open("POST", "/uhgroupings/logout");
+            r.open("POST", "/uhgroupings/logout", true);
             r.setRequestHeader("X-XSRF-TOKEN", $scope.getCookie("XSRF-TOKEN"));
             r.send();
-            $window.location.href = "/uhgroupings/";
         };
 
         /**
